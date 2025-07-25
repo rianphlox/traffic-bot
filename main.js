@@ -5,28 +5,28 @@ const path = require('path');
 
 puppeteer.use(StealthPlugin());
 
-// Realistic iPhone user agents
-const mobileUserAgents = [
+// User agents (4 mobile + 4 PC laptops)
+const userAgents = [
     'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1', // iPhone X
     'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1', // iPhone XR
     'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Mobile/15E148 Safari/604.1', // iPhone 11
     'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1', // iPhone 13
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1', // iPhone (generic)
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/114.0.5735.99 Mobile/15E148 Safari/604.1', // iPhone Chrome
-    'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36', // Android (for variety)
-    'Mozilla/5.0 (Linux; Android 13; SAMSUNG SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/21.0 Chrome/110.0.5481.154 Mobile Safari/537.36' // Samsung (for variety)
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36', // Samsung laptop (Chrome)
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82', // Acer laptop (Edge)
+    'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0', // Xiaomi laptop (Firefox)
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0' // HP laptop (Opera)
 ];
 
-// Device viewport configurations (aligned with iPhone models)
+// Device viewports (aligned with user agents)
 const deviceViewports = [
     { width: 375, height: 812, deviceScaleFactor: 3, isMobile: true }, // iPhone X
     { width: 414, height: 896, deviceScaleFactor: 2, isMobile: true }, // iPhone XR
     { width: 414, height: 896, deviceScaleFactor: 3, isMobile: true }, // iPhone 11
     { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true }, // iPhone 13
-    { width: 375, height: 812, deviceScaleFactor: 3, isMobile: true }, // iPhone (generic)
-    { width: 414, height: 896, deviceScaleFactor: 3, isMobile: true }, // iPhone Chrome
-    { width: 360, height: 800, deviceScaleFactor: 3, isMobile: true }, // Android
-    { width: 412, height: 915, deviceScaleFactor: 3.5, isMobile: true } // Samsung
+    { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // Samsung laptop
+    { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false }, // Acer laptop
+    { width: 1440, height: 900, deviceScaleFactor: 1, isMobile: false }, // Xiaomi laptop
+    { width: 1280, height: 720, deviceScaleFactor: 1, isMobile: false } // HP laptop
 ];
 
 // Common referrers
@@ -38,16 +38,29 @@ const referrers = [
     ''
 ];
 
+// Proxies (8 unique proxies)
+const proxies = [
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-4OYzilrv-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-sOIVNHqK-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-Lww2myEJ-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-YOAM6dma-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-owYCe5VG-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-87TFYhrX-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-C3hMVazD-sessTime-2:TSFJOTEy@aus.360s5.com:3600',
+    'http://79731769-zone-custom-region-US-state-newyork-sessid-iQOjKRXw-sessTime-2:TSFJOTEy@aus.360s5.com:3600'
+];
+
 const url = 'https://www.profitableratecpm.com/t5nmfzbf?key=aa2bbf13f4d075c4f1b0e4927b3d8dde';
 
 // Setup logging to file
 const logDir = path.join(__dirname, 'logs');
-const logFile = path.join(logDir, 'browser.log');
+const logFile = path.join(logDir, `browser-${Date.now()}.log`);
 
 async function ensureLogDir() {
     try {
         await fs.mkdir(logDir, { recursive: true });
     } catch (error) {
+        await logToFile(`Failed to create log directory: ${error.message}`, 'ERROR');
         console.error(`Failed to create log directory: ${error.message}`);
     }
 }
@@ -76,24 +89,17 @@ const randomDelay = (min, max) => {
     return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
 };
 
-// Simulate scrolling
-async function simulateScrolling(page, index) {
+// Simulate random scrolling throughout session
+async function simulateRandomScrolling(page, index, sessionDuration) {
     try {
-        const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
-        const maxScroll = Math.min(scrollHeight, 3000);
-        const steps = Math.floor(Math.random() * 5) + 3;
-        const scrollStep = maxScroll / steps;
-
-        for (let i = 1; i <= steps; i++) {
-            await page.evaluate((step) => window.scrollTo(0, step), scrollStep * i);
-            await randomDelay(500, 1500);
-            await logToFile(`[Browser ${index + 1}] Scrolled to position ${scrollStep * i}`, 'INFO');
-        }
-
-        if (Math.random() > 0.5) {
-            await page.evaluate((step) => window.scrollBy(0, -step), scrollStep);
-            await randomDelay(300, 1000);
-            await logToFile(`[Browser ${index + 1}] Scrolled back up by ${scrollStep}`, 'INFO');
+        const startTime = Date.now();
+        while (Date.now() - startTime < sessionDuration) {
+            const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+            const maxScroll = Math.min(scrollHeight, 3000);
+            const targetY = Math.floor(Math.random() * maxScroll);
+            await page.evaluate((y) => window.scrollTo(0, y), targetY);
+            await logToFile(`[Browser ${index + 1}] Scrolled to position ${targetY}`, 'INFO');
+            await randomDelay(1000, 3000); // Scroll every 1-3s
         }
     } catch (error) {
         await logToFile(`[Browser ${index + 1}] Scrolling error: ${error.message}`, 'ERROR');
@@ -148,12 +154,32 @@ async function navigateWithRetry(page, url, index, retries = 3, delay = 2000) {
     }
 }
 
-async function createStealthBrowser(userAgent, viewport, index) {
+async function createStealthBrowser(userAgent, viewport, index, proxy) {
     let browser = null;
     let page = null;
     try {
-        browser = await puppeteer.launch({
-            headless: false,
+        if (!proxy) {
+            await logToFile(`[Browser ${index + 1}] No proxy provided`, 'ERROR');
+            throw new Error('No proxy provided');
+        }
+
+        const proxyParts = proxy.split('@');
+        if (proxyParts.length !== 2) {
+            await logToFile(`[Browser ${index + 1}] Invalid proxy format: ${proxy}`, 'ERROR');
+            throw new Error(`Invalid proxy format: ${proxy}`);
+        }
+        const [proxyAuth, proxyHost] = proxyParts;
+        // Extract username and password by finding the last colon before @
+        const lastColonIndex = proxyAuth.lastIndexOf(':');
+        if (lastColonIndex === -1) {
+            await logToFile(`[Browser ${index + 1}] Invalid proxy auth format: ${proxyAuth}`, 'ERROR');
+            throw new Error(`Invalid proxy auth format: ${proxyAuth}`);
+        }
+        const proxyUser = proxyAuth.slice(7, lastColonIndex); // Skip 'http://'
+        const proxyPass = proxyAuth.slice(lastColonIndex + 1);
+
+        const launchOptions = {
+            headless: false, // Non-headless as requested
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -164,13 +190,19 @@ async function createStealthBrowser(userAgent, viewport, index) {
                 '--disable-dev-shm-usage',
                 '--no-zygote',
                 '--disable-background-networking',
-                '--disable-extensions'
+                '--disable-extensions',
+                `--proxy-server=${proxyHost}` // Use proxy host (aus.360s5.com:3600)
             ],
             ignoreDefaultArgs: ['--enable-automation'],
             defaultViewport: null
-        });
+        };
 
+        browser = await puppeteer.launch(launchOptions);
         page = await browser.newPage();
+
+        // Proxy authentication
+        await page.authenticate({ username: proxyUser, password: proxyPass });
+        await logToFile(`[Browser ${index + 1}] Using proxy: ${proxy}`, 'INFO');
 
         await page.setRequestInterception(true);
         page.on('request', async request => {
@@ -222,7 +254,7 @@ async function createStealthBrowser(userAgent, viewport, index) {
             });
 
             Object.defineProperty(navigator, 'platform', {
-                get: () => 'iPhone', // All iPhone models
+                get: () => userAgent.includes('iPhone') ? 'iPhone' : 'Win32',
                 configurable: true
             });
 
@@ -253,73 +285,82 @@ async function createStealthBrowser(userAgent, viewport, index) {
         await logToFile(`[Browser ${index + 1}] Successfully loaded final URL: ${finalUrl}`, 'INFO');
         console.log(`[Browser ${index + 1}] Successfully loaded final URL: ${finalUrl}`);
 
-        await simulateScrolling(page, index);
-        await simulateMouseMovements(page, index);
-        const timeOnPage = Math.floor(Math.random() * (120000 - 30000)) + 30000;
-        await logToFile(`[Browser ${index + 1}] Staying on page for ${timeOnPage / 1000}s`, 'INFO');
-        await randomDelay(timeOnPage, timeOnPage);
+        const sessionDuration = Math.floor(Math.random() * (180000 - 60000)) + 60000; // 60-180s
+        await logToFile(`[Browser ${index + 1}] Session duration: ${sessionDuration / 1000}s`, 'INFO');
 
-        await logToFile(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'}`, 'INFO');
-        console.log(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'}`);
-        return { browser, page };
+        // Run scrolling and mouse movements concurrently
+        const scrollingPromise = simulateRandomScrolling(page, index, sessionDuration);
+        const mousePromise = simulateMouseMovements(page, index);
+        await Promise.all([scrollingPromise, mousePromise]);
+
+        // Ensure full session duration is respected
+        const elapsed = Date.now() - (await page.evaluate(() => performance.timing.navigationStart));
+        const remaining = sessionDuration - elapsed;
+        if (remaining > 0) {
+            await randomDelay(remaining, remaining);
+            await logToFile(`[Browser ${index + 1}] Waited additional ${remaining / 1000}s to complete session`, 'INFO');
+        }
+
+        await logToFile(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'} Proxy: ${proxy}`, 'INFO');
+        console.log(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'} Proxy: ${proxy}`);
+
+        // Close browser
+        await browser.close();
+        await logToFile(`[Browser ${index + 1}] Closed after session`, 'INFO');
+        console.log(`[Browser ${index + 1}] Closed after session`);
+        return null;
     } catch (error) {
         await logToFile(`[Browser ${index + 1}] Error: ${error.message}`, 'ERROR');
         console.error(`[Browser ${index + 1}] Error: ${error.message}`);
         if (browser) {
-            await logToFile(`[Browser ${index + 1}] Browser left open for debugging. Close manually or use Ctrl+C.`, 'INFO');
-            console.log(`[Browser ${index + 1}] Browser left open for debugging. Close manually or use Ctrl+C.`);
+            await browser.close();
+            await logToFile(`[Browser ${index + 1}] Closed due to error`, 'INFO');
+            console.log(`[Browser ${index + 1}] Closed due to error`);
         }
         throw error;
     }
 }
 
+async function runBatch(userAgents, viewports, proxies, batchSize) {
+    if (proxies.length < batchSize) {
+        await logToFile(`Not enough proxies (${proxies.length}) for batch size ${batchSize}`, 'ERROR');
+        throw new Error(`Not enough proxies (${proxies.length}) for batch size ${batchSize}`);
+    }
+
+    const browserPromises = [];
+    const shuffledIndices = shuffleArray([...Array(batchSize).keys()]); // Randomize browser order
+    const shuffledUserAgents = shuffleArray([...userAgents]);
+    const shuffledViewports = shuffleArray([...viewports]);
+    const shuffledProxies = shuffleArray([...proxies]);
+
+    for (let i = 0; i < batchSize; i++) {
+        const index = shuffledIndices[i];
+        const proxy = shuffledProxies[i]; // Ensure unique proxy per browser
+        browserPromises.push(createStealthBrowser(
+            shuffledUserAgents[i % shuffledUserAgents.length],
+            shuffledViewports[i % shuffledViewports.length],
+            index,
+            proxy
+        ));
+        if (i < batchSize - 1) {
+            await new Promise(resolve => setTimeout(resolve, 3000)); // 3s delay between launches
+        }
+    }
+
+    const results = await Promise.allSettled(browserPromises);
+    const successful = results.filter(result => result.status === 'fulfilled').length;
+    await logToFile(`Batch completed: ${successful}/${batchSize} browsers successful`, 'INFO');
+    console.log(`Batch completed: ${successful}/${batchSize} browsers successful`);
+}
+
 (async () => {
     await ensureLogDir();
-    const browsers = [];
-    const shuffledUserAgents = shuffleArray([...mobileUserAgents]);
-    const shuffledViewports = shuffleArray([...deviceViewports]);
-
     try {
-        const browserPromises = [];
-        for (let i = 0; i < 8; i++) { // Increased to 8 browsers
-            browserPromises.push(createStealthBrowser(
-                shuffledUserAgents[i % shuffledUserAgents.length], // Cycle through user agents
-                shuffledViewports[i % shuffledViewports.length], // Cycle through viewports
-                i
-            ));
-            if (i < 7) await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-
-        const results = await Promise.allSettled(browserPromises);
-        browsers.push(...results
-            .filter(result => result.status === 'fulfilled')
-            .map(result => result.value));
-
-        await logToFile(`Successfully opened ${browsers.length} stealth browsers!`, 'INFO');
-        console.log(`✅ Successfully opened ${browsers.length} stealth browsers!`);
-
-        const cleanup = async () => {
-            await logToFile('Cleaning up browsers...', 'INFO');
-            console.log('Cleaning up browsers...');
-            await Promise.all(browsers.map(({ browser }) => browser.close()));
-            process.exit(0);
-        };
-
-        process.on('SIGINT', cleanup);
-        process.on('SIGTERM', cleanup);
-        process.on('uncaughtException', async (err) => {
-            await logToFile(`Uncaught Exception: ${err.message}`, 'ERROR');
-            console.error('Uncaught Exception:', err);
-            await logToFile('Browsers left open for debugging. Close manually or use Ctrl+C.', 'INFO');
-            console.log('Browsers left open for debugging. Close manually or use Ctrl+C.');
-        });
-
-        await new Promise(() => {});
+        await runBatch(userAgents, deviceViewports, proxies, 8);
+        await logToFile(`Successfully completed batch of 8 browsers!`, 'INFO');
+        console.log(`✅ Successfully completed batch of 8 browsers!`);
     } catch (error) {
         await logToFile(`Fatal error: ${error.message}`, 'ERROR');
         console.error('Fatal error:', error);
-        await logToFile('Browsers left open for debugging. Close manually or use Ctrl+C.', 'INFO');
-        console.log('Browsers left open for debugging. Close manually or use Ctrl+C.');
-        await new Promise(() => {});
     }
 })();
