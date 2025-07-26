@@ -5,39 +5,45 @@ const path = require('path');
 
 puppeteer.use(StealthPlugin());
 
-// User agents (iPhone + Windows)
-const mobileUserAgents = [
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1', // iPhone X
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1', // iPhone XR
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Mobile/15E148 Safari/604.1', // iPhone 11
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1', // iPhone 13
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1', // iPhone (generic)
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/114.0.5735.99 Mobile/15E148 Safari/604.1', // iPhone Chrome
-    'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36', // Android
-    'Mozilla/5.0 (Linux; Android 13; SAMSUNG SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/21.0 Chrome/110.0.5481.154 Mobile Safari/537.36', // Samsung
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36', // Windows Chrome
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82', // Windows Edge
-    'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0', // Windows Firefox
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0' // Windows Opera
+// User agents (20 Windows devices)
+const userAgents = [
+    ...Array(20).fill().map((_, i) => {
+        const windowsModels = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', // Chrome on Windows 10
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36', // Chrome on Windows 10
+            'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', // Chrome on Windows 11
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36', // Chrome on Windows 10
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0', // Firefox on Windows 10
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Edge/120.0.0.0 Safari/537.36', // Edge on Windows 10
+            'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Edge/121.0.0.0 Safari/537.36', // Edge on Windows 11
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36', // Chrome on Windows 10
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/109.0', // Firefox on Windows 10
+            'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Edge/119.0.0.0 Safari/537.36' // Edge on Windows 11
+        ];
+        return windowsModels[i % 10];
+    })
 ];
 
 // Device viewports (aligned with user agents)
 const deviceViewports = [
-    { width: 375, height: 812, deviceScaleFactor: 3, isMobile: true }, // iPhone X
-    { width: 414, height: 896, deviceScaleFactor: 2, isMobile: true }, // iPhone XR
-    { width: 414, height: 896, deviceScaleFactor: 3, isMobile: true }, // iPhone 11
-    { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true }, // iPhone 13
-    { width: 375, height: 812, deviceScaleFactor: 3, isMobile: true }, // iPhone (generic)
-    { width: 414, height: 896, deviceScaleFactor: 3, isMobile: true }, // iPhone Chrome
-    { width: 360, height: 800, deviceScaleFactor: 3, isMobile: true }, // Android
-    { width: 412, height: 915, deviceScaleFactor: 3.5, isMobile: true }, // Samsung
-    { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // Windows Chrome
-    { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false }, // Windows Edge
-    { width: 1440, height: 900, deviceScaleFactor: 1, isMobile: false }, // Windows Firefox
-    { width: 1280, height: 720, deviceScaleFactor: 1, isMobile: false } // Windows Opera
+    ...Array(20).fill().map((_, i) => {
+        const viewports = [
+            { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false }, // Full HD
+            { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // Common laptop
+            { width: 1440, height: 900, deviceScaleFactor: 1, isMobile: false }, // Common desktop
+            { width: 1600, height: 900, deviceScaleFactor: 1, isMobile: false }, // HD+
+            { width: 1280, height: 720, deviceScaleFactor: 1, isMobile: false }, // HD
+            { width: 1680, height: 1050, deviceScaleFactor: 1, isMobile: false }, // WSXGA+
+            { width: 1920, height: 1200, deviceScaleFactor: 1, isMobile: false }, // WUXGA
+            { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // Common laptop
+            { width: 1536, height: 864, deviceScaleFactor: 1, isMobile: false }, // Common desktop
+            { width: 2560, height: 1440, deviceScaleFactor: 1, isMobile: false } // QHD
+        ];
+        return viewports[i % 10];
+    })
 ];
 
-// Referrers
+// Common referrers
 const referrers = [
     'https://www.google.com/',
     'https://www.facebook.com/',
@@ -46,9 +52,30 @@ const referrers = [
     ''
 ];
 
+// Read proxies from proxy.txt
+const proxyFilePath = path.join(__dirname, 'proxy.txt');
+let proxies = [];
+try {
+    const proxyData = require('fs').readFileSync(proxyFilePath, 'utf8');
+    proxies = proxyData.split('\n')
+        .map(line => line.trim())
+        .filter(line => line)
+        .map(line => {
+            const [host, port, username, password] = line.split(':');
+            return `http://${username}:${password}@${host}:${port}`;
+        });
+    if (proxies.length < 1) {
+        throw new Error(`Insufficient proxies in proxy.txt: found ${proxies.length}, need at least 1`);
+    }
+    console.log(`Loaded ${proxies.length} proxies from proxy.txt`);
+} catch (error) {
+    console.error(`Failed to read proxy.txt: ${error.message}`);
+    process.exit(1);
+}
+
 const url = 'https://www.profitableratecpm.com/t5nmfzbf?key=aa2bbf13f4d075c4f1b0e4927b3d8dde';
 
-// Logging setup
+// Setup logging to file
 const logDir = path.join(__dirname, 'logs');
 const logFile = path.join(logDir, `browser-${Date.now()}.log`);
 
@@ -57,6 +84,7 @@ async function ensureLogDir() {
         await fs.mkdir(logDir, { recursive: true });
     } catch (error) {
         await logToFile(`Failed to create log directory: ${error.message}`, 'ERROR');
+        console.error(`Failed to create log directory: ${error.message}`);
     }
 }
 
@@ -89,37 +117,35 @@ async function simulateRandomScrolling(page, index, sessionDuration) {
     try {
         const startTime = Date.now();
         while (Date.now() - startTime < sessionDuration) {
-            const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
-            const maxScroll = Math.min(scrollHeight, 3000);
-            const targetY = Math.floor(Math.random() * maxScroll); // Random scroll position
-            await page.evaluate((y) => window.scrollTo(0, y), targetY);
-            await logToFile(`[Browser ${index + 1}] Scrolled to position ${targetY}`, 'INFO');
-            await randomDelay(1000, 3000); // Pause 1-3s between scrolls
+            // Check if page is scrollable
+            const { scrollHeight, viewportHeight } = await page.evaluate(() => ({
+                scrollHeight: document.body.scrollHeight,
+                viewportHeight: window.innerHeight
+            }));
+            
+            if (scrollHeight <= viewportHeight) {
+                await logToFile(`[Browser ${index + 1}] Page is not scrollable (scrollHeight: ${scrollHeight}, viewportHeight: ${viewportHeight})`, 'INFO');
+                await randomDelay(1000, 3000);
+                continue;
+            }
+
+            // Random scroll direction and distance
+            const direction = Math.random() > 0.5 ? 1 : -1; // 1 for down, -1 for up
+            const distance = Math.floor(Math.random() * 300) + 100; // 100-400 pixels
+            const scrollAmount = direction * distance;
+
+            await page.evaluate((amount) => {
+                window.scrollBy({ top: amount, behavior: 'smooth' });
+            }, scrollAmount);
+
+            const currentPosition = await page.evaluate(() => window.scrollY);
+            await logToFile(`[Browser ${index + 1}] Scrolled ${scrollAmount > 0 ? 'down' : 'up'} by ${Math.abs(scrollAmount)} pixels to position ${currentPosition}`, 'INFO');
+            
+            await randomDelay(1000, 3000); // Scroll every 1-3s
         }
     } catch (error) {
         await logToFile(`[Browser ${index + 1}] Scrolling error: ${error.message}`, 'ERROR');
-    }
-}
-
-// Simulate mouse movements
-async function simulateMouseMovements(page, index) {
-    try {
-        const viewport = await page.viewport();
-        const width = viewport.width;
-        const height = viewport.height;
-
-        const points = Array.from({ length: Math.floor(Math.random() * 3) + 3 }, () => ({
-            x: Math.floor(Math.random() * width * 0.8) + width * 0.1,
-            y: Math.floor(Math.random() * height * 0.8) + height * 0.1,
-        }));
-
-        for (const point of points) {
-            await page.mouse.move(point.x, point.y, { steps: 10 });
-            await randomDelay(200, 600);
-            await logToFile(`[Browser ${index + 1}] Mouse moved to (${point.x}, ${point.y})`, 'INFO');
-        }
-    } catch (error) {
-        await logToFile(`[Browser ${index + 1}] Mouse movement error: ${error.message}`, 'ERROR');
+        console.error(`[Browser ${index + 1}] Scrolling error: ${error.message}`);
     }
 }
 
@@ -133,47 +159,75 @@ async function navigateWithRetry(page, url, index, retries = 3, delay = 2000) {
             });
             const finalUrl = page.url();
             await logToFile(`[Browser ${index + 1}] [Attempt ${attempt}] Navigated to final URL: ${finalUrl}`, 'INFO');
+            // Log IP address for verification
+            try {
+                const ipResponse = await page.evaluate(() => fetch('http://api.ipify.org').then(res => res.text()));
+                await logToFile(`[Browser ${index + 1}] External IP: ${ipResponse}`, 'INFO');
+            } catch (ipError) {
+                await logToFile(`[Browser ${index + 1}] Failed to fetch IP: ${ipError.message}`, 'WARN');
+            }
             return { response, finalUrl };
         } catch (error) {
             if (attempt === retries) {
                 await logToFile(`[Browser ${index + 1}] Navigation failed after ${retries} attempts: ${error.message}`, 'ERROR');
-                throw error;
+                throw new Error(`Navigation failed after ${retries} attempts: ${error.message}`);
             }
             await logToFile(`[Browser ${index + 1}] [Attempt ${attempt}/${retries}] Navigation failed: ${error.message}. Retrying in ${delay}ms`, 'WARN');
+            console.warn(`[Browser ${index + 1}] [Attempt ${attempt}/${retries}] Navigation failed: ${error.message}. Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             delay *= 2;
         }
     }
 }
 
-async function createStealthBrowser(userAgent, viewport, index, proxy = null) {
+async function createStealthBrowser(userAgent, viewport, index, proxy) {
     let browser = null;
     let page = null;
     try {
+        if (!proxy) {
+            await logToFile(`[Browser ${index + 1}] No proxy provided`, 'ERROR');
+            throw new Error('No proxy provided');
+        }
+
+        const proxyParts = proxy.split('@');
+        if (proxyParts.length !== 2) {
+            await logToFile(`[Browser ${index + 1}] Invalid proxy format: ${proxy}`, 'ERROR');
+            throw new Error(`Invalid proxy format: ${proxy}`);
+        }
+        const [proxyAuth, proxyHost] = proxyParts;
+        const lastColonIndex = proxyAuth.lastIndexOf(':');
+        if (lastColonIndex === -1) {
+            await logToFile(`[Browser ${index + 1}] Invalid proxy auth format: ${proxyAuth}`, 'ERROR');
+            throw new Error(`Invalid proxy auth format: ${proxyAuth}`);
+        }
+        const proxyUser = proxyAuth.slice(7, lastColonIndex); // Skip 'http://'
+        const proxyPass = proxyAuth.slice(lastColonIndex + 1);
+
         const launchOptions = {
-            headless: true,
+            headless: false, // Non-headless as requested
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-infobars',
+                `--window-size=${viewport.width},${viewport.height}`,
+                `--window-position=${100 + index * 50},${100 + index * 50}`,
                 '--disable-blink-features=AutomationControlled',
                 '--disable-dev-shm-usage',
                 '--no-zygote',
                 '--disable-background-networking',
                 '--disable-extensions',
-                '--disable-gpu',
-                '--no-first-run'
+                `--proxy-server=${proxyHost}` // Use proxy host (e.g., ade.360s5.com:3600)
             ],
             ignoreDefaultArgs: ['--enable-automation'],
             defaultViewport: null
         };
 
-        if (proxy) {
-            launchOptions.args.push(`--proxy-server=${proxy}`);
-        }
-
         browser = await puppeteer.launch(launchOptions);
         page = await browser.newPage();
+
+        // Proxy authentication
+        await page.authenticate({ username: proxyUser, password: proxyPass });
+        await logToFile(`[Browser ${index + 1}] Using proxy: ${proxy}`, 'INFO');
 
         await page.setRequestInterception(true);
         page.on('request', async request => {
@@ -182,6 +236,7 @@ async function createStealthBrowser(userAgent, viewport, index, proxy = null) {
         });
         page.on('requestfailed', async request => {
             await logToFile(`[Browser ${index + 1}] Request failed: ${request.url()} - ${request.failure().errorText}`, 'ERROR');
+            console.error(`[Browser ${index + 1}] Request failed: ${request.url()} - ${request.failure().errorText}`);
         });
         page.on('response', async response => {
             if (response.status() >= 300 && response.status() <= 399) {
@@ -207,7 +262,7 @@ async function createStealthBrowser(userAgent, viewport, index, proxy = null) {
             Object.defineProperty(navigator, 'plugins', {
                 get: () => Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
                     name: `Plugin${i}`,
-                    filename: `plugin${i}.so`,
+                    filename: `plugin${i}.dll`,
                     description: `Description for plugin ${i}`
                 })),
                 configurable: true
@@ -224,7 +279,7 @@ async function createStealthBrowser(userAgent, viewport, index, proxy = null) {
             });
 
             Object.defineProperty(navigator, 'platform', {
-                get: () => userAgent.includes('Windows') ? 'Win32' : 'iPhone',
+                get: () => 'Win32',
                 configurable: true
             });
 
@@ -253,68 +308,105 @@ async function createStealthBrowser(userAgent, viewport, index, proxy = null) {
 
         const { finalUrl } = await navigateWithRetry(page, url, index);
         await logToFile(`[Browser ${index + 1}] Successfully loaded final URL: ${finalUrl}`, 'INFO');
+        console.log(`[Browser ${index + 1}] Successfully loaded final URL: ${finalUrl}`);
 
-        const sessionDuration = Math.floor(Math.random() * (240000 - 120000)) + 120000; // 120-240s
+        const sessionDuration = Math.floor(Math.random() * (180000 - 40000)) + 40000; // 40-180s
         await logToFile(`[Browser ${index + 1}] Session duration: ${sessionDuration / 1000}s`, 'INFO');
 
-        // Run scrolling and mouse movements concurrently
-        const scrollingPromise = simulateRandomScrolling(page, index, sessionDuration);
-        const mousePromise = simulateMouseMovements(page, index);
-        await Promise.all([scrollingPromise, mousePromise]);
+        // Run scrolling
+        await simulateRandomScrolling(page, index, sessionDuration);
 
-        // Wait for remaining session time
+        // Ensure full session duration is respected
         const elapsed = Date.now() - (await page.evaluate(() => performance.timing.navigationStart));
         const remaining = sessionDuration - elapsed;
-        if (remaining > 0) await randomDelay(remaining, remaining);
+        if (remaining > 0) {
+            await randomDelay(remaining, remaining);
+            await logToFile(`[Browser ${index + 1}] Waited additional ${remaining / 1000}s to complete session`, 'INFO');
+        }
 
-        await logToFile(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'}`, 'INFO');
+        await logToFile(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'} Proxy: ${proxy}`, 'INFO');
+        console.log(`[Browser ${index + 1}] Opened with UA: ${userAgent.substring(0, 50)}... Referrer: ${referrer || 'None'} Proxy: ${proxy}`);
+
+        // Close browser
         await browser.close();
         await logToFile(`[Browser ${index + 1}] Closed after session`, 'INFO');
-        return null; // Return null since browser is closed
+        console.log(`[Browser ${index + 1}] Closed after session`);
+        return null;
     } catch (error) {
         await logToFile(`[Browser ${index + 1}] Error: ${error.message}`, 'ERROR');
-        if (browser) await browser.close();
-        return null;
+        console.error(`[Browser ${index + 1}] Error: ${error.message}`);
+        if (browser) {
+            await browser.close();
+            await logToFile(`[Browser ${index + 1}] Closed due to error`, 'INFO');
+            console.log(`[Browser ${index + 1}] Closed due to error`);
+        }
+        throw error;
     }
 }
 
-async function runBatch(userAgents, viewports, batchSize, startIndex, proxies = []) {
-    const batchPromises = [];
-    const shuffledIndices = shuffleArray([...Array(batchSize).keys()].map(i => startIndex + i));
-    for (const i of shuffledIndices) {
-        const proxy = proxies[i % proxies.length] || null;
-        batchPromises.push(createStealthBrowser(
-            userAgents[i % userAgents.length],
-            viewports[i % viewports.length],
-            i,
-            proxy
+async function runBatch(userAgents, viewports, proxy, startIndex, batchSize) {
+    if (!proxy) {
+        await logToFile(`No proxy available for batch starting at ${startIndex}`, 'ERROR');
+        throw new Error(`No proxy available for batch starting at ${startIndex}`);
+    }
+
+    const browserPromises = [];
+    const shuffledIndices = shuffleArray([...Array(batchSize).keys()].map(i => i + startIndex));
+    const shuffledUserAgents = shuffleArray([...userAgents.slice(startIndex, startIndex + batchSize)]);
+    const shuffledViewports = shuffleArray([...viewports.slice(startIndex, startIndex + batchSize)]);
+
+    for (let i = 0; i < batchSize; i++) {
+        const index = shuffledIndices[i];
+        browserPromises.push(createStealthBrowser(
+            shuffledUserAgents[i],
+            shuffledViewports[i],
+            index,
+            proxy // Use same proxy for all browsers in batch
         ));
     }
 
-    await Promise.all(batchPromises);
-    await logToFile(`Batch ${startIndex + 1}-${startIndex + batchSize} completed`, 'INFO');
+    const results = await Promise.allSettled(browserPromises);
+    const successful = results.filter(result => result.status === 'fulfilled').length;
+    await logToFile(`Batch ${Math.floor(startIndex / batchSize) + 1} completed: ${successful}/${batchSize} browsers successful`, 'INFO');
+    console.log(`Batch ${Math.floor(startIndex / batchSize) + 1} completed: ${successful}/${batchSize} browsers successful`);
+}
+
+async function runAllBatches(userAgents, viewports, proxies, totalBrowsers = 20, batchSize = 10, proxyIndex = 0) {
+    const proxy = proxies[proxyIndex % proxies.length]; // Use one proxy for all browsers in this set
+    await logToFile(`Starting set with proxy ${proxy} (proxy index: ${proxyIndex})`, 'INFO');
+    
+    for (let startIndex = 0; startIndex < totalBrowsers; startIndex += batchSize) {
+        await runBatch(userAgents, viewports, proxy, startIndex, Math.min(batchSize, totalBrowsers - startIndex));
+        if (startIndex + batchSize < totalBrowsers) {
+            await logToFile(`Waiting 3 seconds before next batch`, 'INFO');
+            await new Promise(resolve => setTimeout(resolve, 3000)); // 3s delay between batches
+        }
+    }
 }
 
 (async () => {
     await ensureLogDir();
-    const shuffledUserAgents = shuffleArray([...mobileUserAgents]);
-    const shuffledViewports = shuffleArray([...deviceViewports]);
-    const totalBrowsers = 8000; // Target for 24 hours
-    const batchSize = 12; // 12 browsers per batch (increased for Windows UAs)
-    const batchesPerHour = Math.ceil(8000 / 24); // ~334 batches/hour
-    const batchInterval = Math.floor((60 * 60 * 1000) / batchesPerHour); // ~10.8s per batch
-    const proxies = []; // Add residential proxies here
-
     try {
-        for (let i = 0; i < totalBrowsers; i += batchSize) {
-            await runBatch(shuffledUserAgents, shuffledViewports, Math.min(batchSize, totalBrowsers - i), i, proxies);
-            if (i + batchSize < totalBrowsers) {
-                await new Promise(resolve => setTimeout(resolve, batchInterval));
+        // Run one set of 20 browsers with the first proxy
+        await runAllBatches(userAgents, deviceViewports, proxies, 20, 10, 0);
+        await logToFile(`Successfully completed all batches (20 browsers) with proxy ${proxies[0]}!`, 'INFO');
+        console.log(`✅ Successfully completed all batches (20 browsers)!`);
+
+        // Uncomment the following block to run multiple sets (e.g., for 8000 browsers)
+        /*
+        const totalBrowsers = 8000; // Total browsers to run
+        const browsersPerSet = 20; // 2 batches of 10
+        for (let i = 0; i < totalBrowsers; i += browsersPerSet) {
+            const proxyIndex = Math.floor(i / browsersPerSet) % proxies.length;
+            await runAllBatches(userAgents, deviceViewports, proxies, browsersPerSet, 10, proxyIndex);
+            if (i + browsersPerSet < totalBrowsers) {
+                await logToFile(`Waiting 211 seconds before next set of 20 browsers`, 'INFO');
+                await new Promise(resolve => setTimeout(resolve, 211000)); // ~211s between sets
             }
         }
-
-        await logToFile(`Successfully completed ${totalBrowsers} browser instances!`, 'INFO');
-        console.log(`✅ Successfully completed ${totalBrowsers} browser instances!`);
+        await logToFile(`Successfully completed all sets (${totalBrowsers} browsers)!`, 'INFO');
+        console.log(`✅ Successfully completed all sets (${totalBrowsers} browsers)!`);
+        */
     } catch (error) {
         await logToFile(`Fatal error: ${error.message}`, 'ERROR');
         console.error('Fatal error:', error);

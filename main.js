@@ -5,28 +5,28 @@ const path = require('path');
 
 puppeteer.use(StealthPlugin());
 
-// User agents (4 mobile + 4 PC laptops)
+// User agents (2 phones + 6 PCs with different browsers)
 const userAgents = [
     'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1', // iPhone X
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1', // iPhone XR
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Mobile/15E148 Safari/604.1', // iPhone 11
     'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1', // iPhone 13
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36', // Samsung laptop (Chrome)
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82', // Acer laptop (Edge)
-    'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0', // Xiaomi laptop (Firefox)
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0' // HP laptop (Opera)
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36', // PC Chrome
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82', // PC Edge
+    'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0', // PC Firefox
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 OPR/100.0.0.0', // PC Opera
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15', // PC Safari
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Vivaldi/6.1' // PC Vivaldi
 ];
 
 // Device viewports (aligned with user agents)
 const deviceViewports = [
     { width: 375, height: 812, deviceScaleFactor: 3, isMobile: true }, // iPhone X
-    { width: 414, height: 896, deviceScaleFactor: 2, isMobile: true }, // iPhone XR
-    { width: 414, height: 896, deviceScaleFactor: 3, isMobile: true }, // iPhone 11
     { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true }, // iPhone 13
-    { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // Samsung laptop
-    { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false }, // Acer laptop
-    { width: 1440, height: 900, deviceScaleFactor: 1, isMobile: false }, // Xiaomi laptop
-    { width: 1280, height: 720, deviceScaleFactor: 1, isMobile: false } // HP laptop
+    { width: 1366, height: 768, deviceScaleFactor: 1, isMobile: false }, // PC Chrome
+    { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false }, // PC Edge
+    { width: 1440, height: 900, deviceScaleFactor: 1, isMobile: false }, // PC Firefox
+    { width: 1280, height: 720, deviceScaleFactor: 1, isMobile: false }, // PC Opera
+    { width: 1600, height: 900, deviceScaleFactor: 1, isMobile: false }, // PC Safari
+    { width: 1680, height: 1050, deviceScaleFactor: 1, isMobile: false } // PC Vivaldi
 ];
 
 // Common referrers
@@ -179,7 +179,7 @@ async function createStealthBrowser(userAgent, viewport, index, proxy) {
         const proxyPass = proxyAuth.slice(lastColonIndex + 1);
 
         const launchOptions = {
-            headless: false, // Non-headless as requested
+            headless: true, // Non-headless as requested
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
